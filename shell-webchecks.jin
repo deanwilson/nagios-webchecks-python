@@ -1,0 +1,5 @@
+{% for check in checks -%}
+  {% for host in groups[checks[check]['group']] -%}
+    {{ checks[check]['command']|replace('%s', host) }}
+{% endfor -%}
+{% endfor %}

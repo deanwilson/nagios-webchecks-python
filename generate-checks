@@ -1,0 +1,31 @@
+#!/usr/bin/python-2.6.2
+import ConfigParser
+from jinja2   import Environment, FileSystemLoader
+from optparse import OptionParser
+
+parser = OptionParser()
+parser.add_option("-t", "--template",    default="shell-webchecks.jin" )
+parser.add_option("-c", "--configfile",  default="webchecks.ini" )
+parser.add_option("-d", "--templatedir", default="." )
+
+(options, args) = parser.parse_args()
+
+config = ConfigParser.RawConfigParser()
+config.read( options.configfile )
+
+groups = {}
+for group in config.items('groups::'):
+    name = group[0]
+    groups[name] = group[1].split(', ')
+
+checks = {}
+for section in config.sections(): # make this and +1 a list comprehension?
+    if section.startswith('check'):
+        groupname     = config.get(section, 'group')
+        check_command = config.get(section, 'command')
+
+        checks[section] = { 'group': groupname, 'command': check_command }
+
+env = Environment(loader=FileSystemLoader( options.templatedir ))
+template = env.get_template( options.template )
+print template.render(checks=checks, groups=groups),
